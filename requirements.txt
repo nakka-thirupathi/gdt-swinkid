@@ -1,0 +1,12 @@
+opencv-python
+numpy
+pandas
+seaborn
+xgboost
+matplotlib
+scikit-learn
+timm
+torch
+torchvision
+kagglehub
+joblib

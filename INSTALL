@@ -1,0 +1,140 @@
+# GDT-SwinKid Installation Guide
+
+A modular framework for **kidney disease classification from CT images** using **CvT**, **Autoencoder-based dimensionality reduction**, and **XGBoost**, adapted for a **single multi-class dataset**.
+
+Target task: **Normal / Cyst / Tumor / Stone classification from kidney CT scans**.
+
+## 1. Clone the Repository
+
+```bash
+git clone https://github.com/nakka-thirupathi/gdt-swinkid.git
+cd gdt-swinkid
+```
+
+## 2. Create a Virtual Environment
+
+```bash
+python -m venv .venv
+.venv\Scripts\activate      # Windows
+# or
+source .venv/bin/activate   # Linux / Mac
+```
+
+## 3. Install Dependencies
+
+```bash
+pip install -r requirements.txt
+```
+
+**Core dependencies:**
+
+* `torch`, `timm` — CvT (Convolutional Vision Transformer)
+* `numpy`, `pandas`, `scikit-learn` — Data handling
+* `xgboost` — Final classifier
+* `opencv-python`, `Pillow` — CT image loading
+* `matplotlib`, `seaborn` — Evaluation plots
+
+## 4. Create Required Folders
+
+```bash
+mkdir -p models results checkpoints
+```
+
+* `models/` — Saved CvT, Autoencoder, XGBoost models
+* `results/` — Confusion matrices, ROC curves, metrics
+* `checkpoints/` — Intermediate training states
+
+## 5. Dataset (Kidney CT)
+
+Download the dataset from Kaggle:
+
+**CT Kidney Dataset – Normal, Cyst, Tumor, Stone**
+[https://www.kaggle.com/datasets/nazmul0087/ct-kidney-dataset-normal-cyst-tumor-and-stone/data](https://www.kaggle.com/datasets/nazmul0087/ct-kidney-dataset-normal-cyst-tumor-and-stone/data)
+
+### Expected Directory Structure
+
+Place the dataset under `data/kidney_ct/`:
+
+```text
+data/
+└── kidney_ct/
+    ├── Normal/
+    ├── Cyst/
+    ├── Tumor/
+    └── Stone/
+```
+
+* Each folder contains CT slice images (`.jpg`, `.png`)
+* Multi-class classification with **4 labels**
+* Automatically handled by `data/data_loader.py` using folder names as class labels
+
+No external or secondary datasets are required.
+
+## 6. Running the Project
+
+### Training
+
+```bash
+python train.py
+```
+
+Pipeline:
+
+1. Load kidney CT images
+2. Feature extraction using **CvT**
+3. Latent compression using **Autoencoder**
+4. Classification using **XGBoost**
+5. Save trained models and evaluation artifacts
+
+Outputs:
+
+* Models → `models/`
+* Metrics & plots → `results/`
+
+### Testing / Inference
+
+```bash
+python test.py
+```
+
+* Loads saved models
+* Runs inference on validation/test split
+* Produces:
+
+  * Accuracy
+  * Precision / Recall / F1-score (per class)
+  * Confusion matrix
+
+## 7. Configuration
+
+Update `config.py` for kidney CT data:
+
+```python
+class Config:
+    IMG_SIZE = 224
+    BATCH_SIZE = 32
+    LATENT_DIM = 64
+    AE_EPOCHS = 50
+    NUM_CLASSES = 4  # Normal, Cyst, Tumor, Stone
+    DEVICE = "cuda"  # or "cpu"
+```
+
+Optional:
+
+* Tune `XGB_PARAMS` for class imbalance
+* Adjust `IMG_SIZE` if higher-resolution CT slices are preferred
+
+## 8. Notes for Kidney CT Adaptation
+
+* Input images are **grayscale CT slices**
+  → Converted internally to 3-channel format for CvT compatibility
+* Dataset imbalance is expected
+  → XGBoost handles this better than softmax-only classifiers
+* Autoencoder reduces overfitting on limited medical data
+
+## 9. Extending the Project
+
+* Replace CvT with Swin / ViT in `models/cax_models.py`
+* Add Grad-CAM or attention heatmaps for explainability
+* Extend to **slice-level → patient-level aggregation**
+* Add cross-validation support in `train.py`

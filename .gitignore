@@ -1,0 +1,7 @@
+.venv
+.notes/
+.vscode/
+
+checkpoints/
+
+__pycache__/
